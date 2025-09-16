@@ -923,5 +923,35 @@ if ('Notification' in window) {
     Notification.requestPermission();
 }
 </script>
+// Хранение записей локально
+let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
+// Сохранение новой записи
+function saveBooking(specialist, time, date) {
+    const newAppointment = {
+        id: Date.now(),
+        specialist,
+        time,
+        date,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    
+    appointments.push(newAppointment);
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+    return newAppointment;
+}
+
+// Получение всех записей
+function getAppointments() {
+    return appointments;
+}
+
+// Удаление записи
+function cancelAppointment(id) {
+    appointments = appointments.filter(app => app.id !== id);
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+}
+</script>
 </body>
 </html>
