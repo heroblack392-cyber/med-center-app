@@ -769,6 +769,9 @@
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const navMenu = document.getElementById('nav-menu');
 
+        // Хранение записей локально
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
         // Отображение специалистов
         function renderSpecialists(category = 'all') {
             specialistsContainer.innerHTML = '';
@@ -843,6 +846,43 @@
             bookingForm.reset();
         }
 
+        // Сохранение новой записи
+        function saveBooking(specialistId, time, date, patientData) {
+            const specialist = specialists.find(s => s.id == specialistId);
+            const newAppointment = {
+                id: Date.now(),
+                specialist: specialist.name,
+                specialty: specialist.specialty,
+                time,
+                date,
+                patient: patientData,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            
+            appointments.push(newAppointment);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            return newAppointment;
+        }
+
+        // Получение всех записей
+        function getAppointments() {
+            return appointments;
+        }
+
+        // Удаление записи
+        function cancelAppointment(id) {
+            appointments = appointments.filter(app => app.id !== id);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+        }
+
+        // Уведомления
+        function showNotification(title, message) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body: message });
+            }
+        }
+
         // Обработка отправки формы
         function handleBookingSubmit(e) {
             e.preventDefault();
@@ -857,11 +897,32 @@
                 notes: document.getElementById('notes').value
             };
             
-            // Здесь обычно отправка данных на сервер
-            console.log('Данные записи:', formData);
+            // Сохраняем запись
+            const newAppointment = saveBooking(
+                formData.specialistId, 
+                formData.time, 
+                formData.date,
+                {
+                    name: formData.name,
+                    phone: formData.phone,
+                    email: formData.email,
+                    notes: formData.notes
+                }
+            );
+            
+            console.log('Новая запись:', newAppointment);
             
             // Показываем сообщение об успехе
             alert('Запись успешно оформлена! С вами свяжутся для подтверждения.');
+            
+            // Показываем уведомление
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        showNotification('Медицинский центр "Здоровье+"', 'Запись успешно оформлена!');
+                    }
+                });
+            }
             
             closeBookingModal();
         }
@@ -901,57 +962,12 @@
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById('appointment-date').min = tomorrow.toISOString().split('T')[0];
+            
+            // Запрос разрешения на уведомления
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
         });
-    </script><!-- Добавьте в конец файла перед </body> -->
-<script>
-// Хранение данных в localStorage
-function saveAppointment(data) {
-    const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    appointments.push(data);
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-}
-
-// Уведомления
-function showNotification(title, message) {
-    if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body: message });
-    }
-}
-
-// Запрос разрешения на уведомления
-if ('Notification' in window) {
-    Notification.requestPermission();
-}
-</script>
-// Хранение записей локально
-let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-
-// Сохранение новой записи
-function saveBooking(specialist, time, date) {
-    const newAppointment = {
-        id: Date.now(),
-        specialist,
-        time,
-        date,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-    };
-    
-    appointments.push(newAppointment);
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-    return newAppointment;
-}
-
-// Получение всех записей
-function getAppointments() {
-    return appointments;
-}
-
-// Удаление записи
-function cancelAppointment(id) {
-    appointments = appointments.filter(app => app.id !== id);
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-}
-</script>
+    </script>
 </body>
 </html>
