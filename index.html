@@ -506,6 +506,26 @@
                 text-align: center;
             }
         }
+
+        /* Toast уведомления */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -660,6 +680,8 @@
         </div>
     </div>
 
+    <div class="toast" id="toast"></div>
+
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -768,9 +790,21 @@
         const selectedTimeInput = document.getElementById('selected-time');
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const navMenu = document.getElementById('nav-menu');
+        const toast = document.getElementById('toast');
 
         // Хранение записей локально
         let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
+        // Функция для показа уведомлений
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.style.background = type === 'error' ? '#e74c3c' : '#2c3e50';
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
 
         // Отображение специалистов
         function renderSpecialists(category = 'all') {
@@ -779,6 +813,11 @@
             const filteredSpecialists = category === 'all' 
                 ? specialists 
                 : specialists.filter(spec => spec.category === category);
+            
+            if (filteredSpecialists.length === 0) {
+                specialistsContainer.innerHTML = '<div class="card"><p>Специалисты не найдены</p></div>';
+                return;
+            }
             
             filteredSpecialists.forEach(specialist => {
                 const card = document.createElement('div');
@@ -897,6 +936,12 @@
                 notes: document.getElementById('notes').value
             };
             
+            // Валидация данных
+            if (!formData.specialistId || !formData.time || !formData.name || !formData.phone || !formData.date) {
+                showToast('Пожалуйста, заполните все обязательные поля', 'error');
+                return;
+            }
+            
             // Сохраняем запись
             const newAppointment = saveBooking(
                 formData.specialistId, 
@@ -913,7 +958,7 @@
             console.log('Новая запись:', newAppointment);
             
             // Показываем сообщение об успехе
-            alert('Запись успешно оформлена! С вами свяжутся для подтверждения.');
+            showToast('Запись успешно оформлена! С вами свяжутся для подтверждения.');
             
             // Показываем уведомление
             if ('Notification' in window) {
@@ -966,6 +1011,12 @@
             // Запрос разрешения на уведомления
             if ('Notification' in window) {
                 Notification.requestPermission();
+            }
+            
+            // Показываем количество активных записей
+            const activeAppointments = appointments.filter(app => app.status === 'pending').length;
+            if (activeAppointments > 0) {
+                showToast(`У вас ${activeAppointments} активных записей`);
             }
         });
     </script>
