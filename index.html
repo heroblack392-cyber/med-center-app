@@ -902,6 +902,26 @@
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById('appointment-date').min = tomorrow.toISOString().split('T')[0];
         });
-    </script>
+    </script><!-- Добавьте в конец файла перед </body> -->
+<script>
+// Хранение данных в localStorage
+function saveAppointment(data) {
+    const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+    appointments.push(data);
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+}
+
+// Уведомления
+function showNotification(title, message) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body: message });
+    }
+}
+
+// Запрос разрешения на уведомления
+if ('Notification' in window) {
+    Notification.requestPermission();
+}
+</script>
 </body>
 </html>
