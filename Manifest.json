@@ -2,7 +2,7 @@
   "name": "Медицинский центр Здоровье+",
   "short_name": "МедЦентр",
   "description": "Приложение для записи к врачам медицинского центра",
-  "start_url": "/",
+  "start_url": "/med-center-app/app.html",
   "display": "standalone",
   "background_color": "#2c3e50",
   "theme_color": "#2c3e50",
