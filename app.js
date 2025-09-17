@@ -1,12 +1,4 @@
-// Данные о специалистах// Функции для администратора (добавьте в app.js)
-function openAdminLogin() {
-    alert('Форма входа администратора будет здесь!');
-    // Здесь потом добавим модальное окно
-}
-
-// Обработчик клика по иконке администратора
-document.addEventListener('DOMContentLoaded', function() {
-    // ... ваш существующий код ...
+// Данные о специалистах
 const specialists = [
     {
         id: 1,
@@ -76,6 +68,9 @@ const specialists = [
 // Текущий выбранный специалист и время
 let selectedSpecialist = null;
 let selectedTime = null;
+
+// Статус администратора
+let isAdminLoggedIn = false;
 
 // Функция для показа уведомлений
 function showToast(message, type = 'success') {
@@ -244,63 +239,18 @@ function cancelAppointment(id) {
 function confirmBooking() {
     if (!selectedSpecialist || !selectedTime) {
         showToast('Пожалуйста, выберите специалиста и время', 'error');
-        return;
     }
-    
-    const patientName = document.getElementById('patient-name').value;
-    const patientPhone = document.getElementById('patient-phone').value;
-    const appointmentDate = document.getElementById('appointment-date').value;
-    const patientNotes = document.getElementById('patient-notes').value;
-    
-    if (!patientName || !patientPhone || !appointmentDate) {
-        showToast('Пожалуйста, заполните все обязательные поля', 'error');
-        return;
-    }
-    
-    const specialist = specialists.find(s => s.id == selectedSpecialist);
-    
-    const newAppointment = {
-        id: Date.now(),
-        specialist: specialist.name,
-        specialty: specialist.specialty,
-        time: selectedTime,
-        date: appointmentDate,
-        patient: {
-            name: patientName,
-            phone: patientPhone,
-            notes: patientNotes
-        },
-        status: 'pending',
-        createdAt: new Date().toISOString()
-    };
-    
-    // Сохраняем в localStorage
-    const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-    appointments.push(newAppointment);
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-    
-    // Показываем уведомление
-    showToast('Запись успешно оформлена!');
-    
-    // Очищаем форму
-    selectedSpecialist = null;
-    selectedTime = null;
-    document.getElementById('patient-name').value = '';
-    document.getElementById('patient-phone').value = '';
-    document.getElementById('patient-notes').value = '';
-    document.querySelectorAll('.time-slot').forEach(slot => {
-        slot.classList.remove('selected');
-    });
-    document.getElementById('time-selection').style.display = 'none';
-    document.getElementById('booking-form').style.display = 'none';
-    
-    // Переходим на главную страницу
-    setTimeout(() => {
-        showSection('home');
-    }, 2000);
 }
 
-// Инициализация при загрузке
+// ===== ФУНКЦИИ АДМИНИСТРАТОРА ===== //
+
+function openAdminLogin() {
+    alert('Форма входа администратора будет здесь!');
+    // Здесь потом добавим модальное окно
+}
+
+// ===== ИНИЦИАЛИЗАЦИЯ ===== //
+
 document.addEventListener('DOMContentLoaded', function() {
     // Установка минимальной даты для записи (завтра)
     const tomorrow = new Date();
@@ -322,15 +272,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Обработчик иконки администратора
+    const adminBtn = document.getElementById('admin-login-btn');
+    if (adminBtn) {
+        adminBtn.addEventListener('click', openAdminLogin);
+        console.log('Обработчик администратора добавлен');
+    } else {
+        console.log('Иконка администратора не найдена');
+    }
+    
     // Запрос разрешения на уведомления
     if ('Notification' in window) {
         Notification.requestPermission();
     }
 });
 
-// Добавляем функции в глобальную область видимости для обработчиков onclick
+// Глобальные функции для обработчиков onclick
 window.showSection = showSection;
 window.selectSpecialist = selectSpecialist;
 window.selectTime = selectTime;
 window.confirmBooking = confirmBooking;
 window.cancelAppointment = cancelAppointment;
+window.openAdminLogin = openAdminLogin;
